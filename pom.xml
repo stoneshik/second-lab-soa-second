@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>lab.soa</groupId>
+    <artifactId>flat-service-wildfly</artifactId>
+    <version>1.0.0</version>
+    <packaging>war</packaging>
+
+    <name>Flat Service WildFly</name>
+    <description>JAX-RS service for flats management deployed on WildFly</description>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- Jakarta EE Version -->
+        <version.jakarta.jakartaee-api>10.0.0</version.jakarta.jakartaee-api>
+        <!-- Dependency Versions -->
+        <version.lombok>1.18.30</version.lombok>
+        <version.log4j>2.20.0</version.log4j>
+        <version.junit>5.10.0</version.junit>
+        <jackson.version>2.16.1</jackson.version>
+        <!-- Plugin Versions -->
+        <version.maven.war.plugin>3.4.0</version.maven.war.plugin>
+        <version.maven.compiler.plugin>3.11.0</version.maven.compiler.plugin>
+        <version.cargo.maven.plugin>1.10.8</version.cargo.maven.plugin>
+        <!-- WildFly Configuration -->
+        <wildfly.home>${basedir}/wildfly</wildfly.home>
+        <wildfly.hostname>localhost</wildfly.hostname>
+        <wildfly.port.management>9990</wildfly.port.management>
+        <wildfly.port.http>8080</wildfly.port.http>
+        <wildfly.port.debug>8787</wildfly.port.debug>
+    </properties>
+    <dependencies>
+        <!-- Jakarta EE Web Profile API -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${version.jakarta.jakartaee-api}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Jackson для XML в JAX-RS -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+            <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Jackson Dataformat XML -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Jackson Java 8 Time поддержка -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Jackson Core -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${version.lombok}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${version.log4j}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${version.log4j}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>flat-service</finalName>
+        <plugins>
+            <!-- Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.maven.compiler.plugin}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${version.lombok}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <!-- WAR Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${version.maven.war.plugin}</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <warSourceDirectory>src/main/webapp</warSourceDirectory>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/resources</directory>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+
+            <!-- Cargo Plugin for WildFly -->
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven3-plugin</artifactId>
+                <version>${version.cargo.maven.plugin}</version>
+                <configuration>
+                    <!-- Container Configuration -->
+                    <container>
+                        <containerId>wildfly30x</containerId>
+                        <type>installed</type>
+                        <home>${wildfly.home}</home>
+                        <timeout>300000</timeout>
+                        <systemProperties>
+                            <org.jboss.as.logging.per-deployment>false</org.jboss.as.logging.per-deployment>
+                        </systemProperties>
+                    </container>
+                    <!-- WildFly Configuration -->
+                    <configuration>
+                        <type>standalone</type>
+                        <properties>
+                            <cargo.jboss.configuration>standalone-full.xml</cargo.jboss.configuration>
+                            <cargo.servlet.port>${wildfly.port.http}</cargo.servlet.port>
+                            <cargo.jboss.management-http.port>${wildfly.port.management}</cargo.jboss.management-http.port>
+                            <cargo.rmi.port>1099</cargo.rmi.port>
+                            <!-- Debug Configuration -->
+                            <cargo.jvmargs>
+                                -Xmx1024m
+                                -Xms512m
+                                -XX:MaxMetaspaceSize=512m
+                                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:${wildfly.port.debug}
+                                -Djava.net.preferIPv4Stack=true
+                            </cargo.jvmargs>
+                        </properties>
+                    </configuration>
+                    <!-- Deployable Configuration -->
+                    <deployables>
+                        <deployable>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <type>war</type>
+                            <properties>
+                                <context>/</context>
+                            </properties>
+                        </deployable>
+                    </deployables>
+                </configuration>
+                <!-- Cargo Goals -->
+                <executions>
+                    <!-- Uncomment to deploy automatically on package phase -->
+                    <!--
+                    <execution>
+                        <id>deploy-on-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                    -->
+                </executions>
+            </plugin>
+        </plugins>
+        <!-- Resource Filtering -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+    <profiles>
+        <!-- Development Profile -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <environment>dev</environment>
+                <db.url>jdbc:postgresql://localhost:5432/soa_service</db.url>
+                <db.username>postgres</db.username>
+                <db.password>postgres</db.password>
+            </properties>
+        </profile>
+    </profiles>
+</project>

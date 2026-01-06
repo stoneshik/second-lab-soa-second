@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                                 https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+    <persistence-unit name="flatServicePU" transaction-type="JTA">
+        <description>Flat Service Persistence Unit</description>
+        <jta-data-source>java:jboss/datasources/PostgresDS</jta-data-source>
+        <class>lab.soa.domain.models.Flat</class>
+        <class>lab.soa.domain.models.Coordinates</class>
+        <class>lab.soa.domain.models.House</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.format_sql" value="false"/>
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+            <!-- Валидация JPA-сущностей -->
+            <property name="jakarta.persistence.validation.mode" value="AUTO"/>
+            <!-- Настройки JDBC -->
+            <property name="hibernate.jdbc.batch_size" value="20"/>
+            <property name="hibernate.jdbc.fetch_size" value="20"/>
+            <property name="hibernate.order_inserts" value="true"/>
+            <property name="hibernate.order_updates" value="true"/>
+            <!-- Настройки соединений -->
+            <property name="hibernate.connection.autocommit" value="false"/>
+            <!-- Таймауты -->
+            <property name="hibernate.jdbc.time_zone" value="UTC"/>
+            <property name="hibernate.id.new_generator_mappings" value="true"/>
+            <!-- Обработка версий (оптимистичная блокировка) -->
+            <property name="hibernate.optimistic.lock" value="all"/>
+            <!-- Настройки для WildFly -->
+            <property name="hibernate.transaction.jta.platform"
+                      value="org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform"/>
+            <!-- Для корректной работы с enum -->
+            <property name="hibernate.type.preferred_instant_jdbc_type" value="TIMESTAMP"/>
+            <property name="hibernate.jdbc.lob.non_contextual_creation" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>

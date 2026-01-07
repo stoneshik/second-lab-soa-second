@@ -25,17 +25,24 @@
         <version.log4j>2.20.0</version.log4j>
         <version.junit>5.10.0</version.junit>
         <jackson.version>2.16.1</jackson.version>
+        <postgresql.version>42.7.8</postgresql.version>
         <!-- Plugin Versions -->
         <version.maven.war.plugin>3.4.0</version.maven.war.plugin>
         <version.maven.compiler.plugin>3.11.0</version.maven.compiler.plugin>
-        <version.cargo.maven.plugin>1.10.8</version.cargo.maven.plugin>
+        <wildfly.maven.plugin.version>5.1.3.Final</wildfly.maven.plugin.version>
         <!-- WildFly Configuration -->
-        <wildfly.home>${basedir}/wildfly</wildfly.home>
+        <wildfly.version>31.0.0.Final</wildfly.version>
         <wildfly.hostname>localhost</wildfly.hostname>
-        <wildfly.port.management>9990</wildfly.port.management>
         <wildfly.port.http>8080</wildfly.port.http>
+        <wildfly.port.management>9990</wildfly.port.management>
         <wildfly.port.debug>8787</wildfly.port.debug>
+        <!-- Database Configuration -->
+        <db.jndi>java:/jdbc/SoaServiceDS</db.jndi>
+        <db.url>jdbc:postgresql://localhost:5432/soa_service</db.url>
+        <db.username>postgres</db.username>
+        <db.password>admin</db.password>
     </properties>
+
     <dependencies>
         <!-- Jakarta EE Web Profile API -->
         <dependency>
@@ -44,24 +51,24 @@
             <version>${version.jakarta.jakartaee-api}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Jackson для XML в JAX-RS -->
+
+        <!-- Jackson для XML/JSON в JAX-RS -->
         <dependency>
             <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
             <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <!-- Jackson Dataformat XML -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <!-- Jackson Java 8 Time поддержка -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+
         <!-- Jackson Core -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -73,6 +80,15 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+
+        <!-- PostgreSQL Driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -81,6 +97,7 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -116,6 +133,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
             <!-- WAR Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -132,68 +150,30 @@
                 </configuration>
             </plugin>
 
-            <!-- Cargo Plugin for WildFly -->
+            <!-- WildFly Maven Plugin - Явная конфигурация -->
             <plugin>
-                <groupId>org.codehaus.cargo</groupId>
-                <artifactId>cargo-maven3-plugin</artifactId>
-                <version>${version.cargo.maven.plugin}</version>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>5.1.3.Final</version>
                 <configuration>
-                    <!-- Container Configuration -->
-                    <container>
-                        <containerId>wildfly30x</containerId>
-                        <type>installed</type>
-                        <home>${wildfly.home}</home>
-                        <timeout>300000</timeout>
-                        <systemProperties>
-                            <org.jboss.as.logging.per-deployment>false</org.jboss.as.logging.per-deployment>
-                        </systemProperties>
-                    </container>
-                    <!-- WildFly Configuration -->
-                    <configuration>
-                        <type>standalone</type>
-                        <properties>
-                            <cargo.jboss.configuration>standalone-full.xml</cargo.jboss.configuration>
-                            <cargo.servlet.port>${wildfly.port.http}</cargo.servlet.port>
-                            <cargo.jboss.management-http.port>${wildfly.port.management}</cargo.jboss.management-http.port>
-                            <cargo.rmi.port>1099</cargo.rmi.port>
-                            <!-- Debug Configuration -->
-                            <cargo.jvmargs>
-                                -Xmx1024m
-                                -Xms512m
-                                -XX:MaxMetaspaceSize=512m
-                                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:${wildfly.port.debug}
-                                -Djava.net.preferIPv4Stack=true
-                            </cargo.jvmargs>
-                        </properties>
-                    </configuration>
-                    <!-- Deployable Configuration -->
-                    <deployables>
-                        <deployable>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <type>war</type>
-                            <properties>
-                                <context>/</context>
-                            </properties>
-                        </deployable>
-                    </deployables>
+                    <jboss-home>${project.basedir}/wildfly</jboss-home>
+                    <hostname>${wildfly.hostname}</hostname>
+                    <port>${wildfly.port.http}</port>
+                    <management-port>${wildfly.port.management}</management-port>
+                    <context-root>/</context-root>
+                    <debug>false</debug>
+                    <java-opts>
+                        -Xmx1024m
+                        -Xms512m
+                        -Djava.net.preferIPv4Stack=true
+                    </java-opts>
+                    <server-config>standalone-full.xml</server-config>
                 </configuration>
-                <!-- Cargo Goals -->
-                <executions>
-                    <!-- Uncomment to deploy automatically on package phase -->
-                    <!--
-                    <execution>
-                        <id>deploy-on-package</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>deploy</goal>
-                        </goals>
-                    </execution>
-                    -->
-                </executions>
+                <!-- Секция executions удалена -->
             </plugin>
         </plugins>
-        <!-- Resource Filtering -->
+
+        <!-- Фильтрация ресурсов -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -205,8 +185,9 @@
             </resource>
         </resources>
     </build>
+
     <profiles>
-        <!-- Development Profile -->
+        <!-- Профиль разработки (активен по умолчанию) -->
         <profile>
             <id>dev</id>
             <activation>
@@ -214,9 +195,18 @@
             </activation>
             <properties>
                 <environment>dev</environment>
-                <db.url>jdbc:postgresql://localhost:5432/soa_service</db.url>
-                <db.username>postgres</db.username>
-                <db.password>postgres</db.password>
+                <!-- Настройки БД для разработки уже в основных свойствах -->
+            </properties>
+        </profile>
+
+        <!-- Профиль для продакшена -->
+        <profile>
+            <id>prod</id>
+            <properties>
+                <environment>prod</environment>
+                <db.url>jdbc:postgresql://prod-db-server:5432/soa_service_prod</db.url>
+                <db.username>${env.DB_USER}</db.username>
+                <db.password>${env.DB_PASSWORD}</db.password>
             </properties>
         </profile>
     </profiles>

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@XmlRootElement(name = "flatsResponse")
+@XmlRootElement(name = "flatsPage")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class WrapperListFlatsResponseDto {
     @XmlElement(name = "totalElements")

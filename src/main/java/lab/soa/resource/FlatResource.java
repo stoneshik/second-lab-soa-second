@@ -108,7 +108,7 @@ public class FlatResource {
             @PathParam("transportType") String transportTypeStr,
             @PathParam("sortType") String sortTypeStr,
             @QueryParam("page") @DefaultValue("0") Integer page,
-            @QueryParam("pageSize") @DefaultValue("10") Integer pageSize) {
+            @QueryParam("size") @DefaultValue("10") Integer size) {
         try {
             // Валидация параметров
             if (!TransportType.isValidValue(transportTypeStr) || !SortType.isValidValue(sortTypeStr)) {
@@ -129,7 +129,7 @@ public class FlatResource {
                     .entity(error)
                     .build();
             }
-            if (pageSize < 1) {
+            if (size < 1) {
                 ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                     .message("Invalid pageSize parameter")
                     .time(LocalDateTime.now())
@@ -142,24 +142,20 @@ public class FlatResource {
             SortType sortType = SortType.valueOf(sortTypeStr.toUpperCase());
             // Получаем общее количество
             Long totalElements = getTotalFlatsCount();
-            Integer totalPages = (int) Math.ceil((double) totalElements / pageSize);
+            Integer totalPages = (int) Math.ceil((double) totalElements / size);
             // Проверка корректности страницы
             if (totalElements > 0 && page >= totalPages) {
                 ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                     .message("Invalid page number")
                     .time(LocalDateTime.now())
                     .build();
-                error.getViolations().add(String.format(
-                    "Requested page %d but only %d pages available",
-                    page, totalPages
-                ));
                 return Response.status(Response.Status.BAD_REQUEST)
                     .entity(error)
                     .build();
             }
             // Получаем данные с пагинацией
             List<Flat> flats = getFlatsOrderedByTimeToMetro(
-                transportType, sortType, page, pageSize
+                transportType, sortType, page, size
             );
             // Конвертируем в DTO
             List<FlatResponseDto> flatDtos = flats.stream()
@@ -167,10 +163,10 @@ public class FlatResource {
                 .collect(Collectors.toList());
             // Создаем оберточный DTO с пагинацией
             WrapperListFlatsResponseDto response = WrapperListFlatsResponseDto.builder()
-                .totalElements(totalElements)
+                .totalElements(Long.valueOf(flatDtos.size()))
                 .totalPages(totalPages)
                 .currentPage(page)
-                .pageSize(pageSize)
+                .pageSize(flatDtos.size())
                 .flats(flatDtos)
                 .build();
             return Response.ok(response).build();

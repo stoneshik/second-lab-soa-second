@@ -20,7 +20,7 @@
         <!-- Versions -->
         <version.jakarta.jakartaee-api>10.0.0</version.jakarta.jakartaee-api>
         <version.lombok>1.18.30</version.lombok>
-        <jackson.version>2.16.1</jackson.version>
+        <version.jaxb>4.0.0</version.jaxb>
         <!-- WildFly paths -->
         <wildfly.home>${project.basedir}/wildfly</wildfly.home>
         <wildfly.deployments.dir>${wildfly.home}/standalone/deployments</wildfly.deployments.dir>
@@ -35,31 +35,20 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Jackson for JAX-RS - включаем в WAR -->
+        <!-- JAXB API (для XML сериализации) -->
         <dependency>
-            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-            <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-            <version>${jackson.version}</version>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${version.jaxb}</version>
+            <scope>provided</scope>
         </dependency>
+
+        <!-- JAXB Runtime (необходимо для Java 11+ без полного Jakarta EE) -->
         <dependency>
-            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-            <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>4.0.2</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Lombok -->
@@ -73,7 +62,7 @@
     </dependencies>
 
     <build>
-        <finalName>ROOT</finalName>  <!-- Имя ROOT для корневого пути -->
+        <finalName>ROOT</finalName>
         <plugins>
             <!-- Compiler Plugin -->
             <plugin>
@@ -92,6 +81,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
             <!-- WAR Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

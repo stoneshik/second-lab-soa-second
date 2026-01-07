@@ -1,7 +1,8 @@
 package lab.soa.resource.dto;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,13 +12,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@XmlAccessorType(XmlAccessType.FIELD)
 public class CoordinatesResponseDto {
-    @JacksonXmlProperty(localName = "id")
+    @XmlElement(name = "id")
     private Long id;
 
-    @JacksonXmlProperty(localName = "x")
+    @XmlElement(name = "x")
     private Float x;
 
-    @JacksonXmlProperty(localName = "y")
+    @XmlElement(name = "y")
     private Long y;
 }

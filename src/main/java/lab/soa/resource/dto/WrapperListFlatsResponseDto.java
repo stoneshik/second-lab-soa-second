@@ -2,10 +2,11 @@ package lab.soa.resource.dto;
 
 import java.util.List;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,21 +16,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JacksonXmlRootElement(localName = "flatsPage")
+@XmlRootElement(name = "flatsResponse")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class WrapperListFlatsResponseDto {
-    @JacksonXmlProperty(localName = "totalElements")
+    @XmlElement(name = "totalElements")
     private Long totalElements;
 
-    @JacksonXmlProperty(localName = "totalPages")
+    @XmlElement(name = "totalPages")
     private Integer totalPages;
 
-    @JacksonXmlProperty(localName = "currentPage")
+    @XmlElement(name = "currentPage")
     private Integer currentPage;
 
-    @JacksonXmlProperty(localName = "pageSize")
+    @XmlElement(name = "pageSize")
     private Integer pageSize;
 
-    @JacksonXmlElementWrapper(localName = "flats")
-    @JacksonXmlProperty(localName = "flat")
+    @XmlElementWrapper(name = "flats")
+    @XmlElement(name = "flat")
     private List<FlatResponseDto> flats;
 }

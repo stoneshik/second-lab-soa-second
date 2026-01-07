@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -12,7 +13,6 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -35,9 +35,9 @@ import lab.soa.resource.dto.FlatResponseDto;
 import lab.soa.resource.dto.HouseResponseDto;
 import lab.soa.resource.dto.WrapperListFlatsResponseDto;
 
+@Stateless
 @Path("/flats")
 @Produces(MediaType.APPLICATION_XML)
-@Transactional
 public class FlatResource {
     @PersistenceContext(unitName = "flatServicePU")
     private EntityManager entityManager;
@@ -61,7 +61,6 @@ public class FlatResource {
                     .entity(error)
                     .build();
             }
-            System.out.println("=== VALIDATED ===");
             PriceType priceType = PriceType.valueOf(priceTypeStr.toUpperCase());
             BalconyType balconyType = BalconyType.valueOf(balconyTypeStr.toUpperCase());
             // Поиск квартиры через Criteria API
@@ -77,6 +76,7 @@ public class FlatResource {
             }
             // Конвертация в DTO
             FlatResponseByIdDto flatDto = convertToFlatByIdResponseDto(flat);
+            System.out.println(flatDto);
             return Response.ok(flatDto).build();
         } catch (NoResultException e) {
             System.out.println(e.getMessage());
@@ -175,11 +175,11 @@ public class FlatResource {
                 .build();
             return Response.ok(response).build();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                 .message("Internal server error")
                 .time(LocalDateTime.now())
                 .build();
-            error.getViolations().add(e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(error)
                 .build();
@@ -263,11 +263,11 @@ public class FlatResource {
             .area(flat.getArea())
             .numberOfRooms(flat.getNumberOfRooms())
             .height(flat.getHeight())
-            .view(flat.getView())
-            .transport(flat.getTransport())
+            .view(flat.getView() != null ? flat.getView().name() : null)
+            .transport(flat.getTransport() != null ? flat.getTransport().name() : null)
             .house(convertToHouseResponseDto(flat.getHouse()))
             .price(flat.getPrice())
-            .balconyType(flat.getBalconyType())
+            .balconyType(flat.getBalconyType() != null ? flat.getBalconyType().name() : null)
             .walkingMinutesToMetro(flat.getWalkingMinutesToMetro())
             .transportMinutesToMetro(flat.getTransportMinutesToMetro())
             .build();
@@ -284,11 +284,11 @@ public class FlatResource {
             .area(flat.getArea())
             .numberOfRooms(flat.getNumberOfRooms())
             .height(flat.getHeight())
-            .view(flat.getView())
-            .transport(flat.getTransport())
+            .view(flat.getView() != null ? flat.getView().name() : null)
+            .transport(flat.getTransport() != null ? flat.getTransport().name() : null)
             .house(convertToHouseResponseDto(flat.getHouse()))
             .price(flat.getPrice())
-            .balconyType(flat.getBalconyType())
+            .balconyType(flat.getBalconyType() != null ? flat.getBalconyType().name() : null)
             .walkingMinutesToMetro(flat.getWalkingMinutesToMetro())
             .transportMinutesToMetro(flat.getTransportMinutesToMetro())
             .build();

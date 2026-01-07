@@ -3,11 +3,9 @@ package lab.soa.resource.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-
-import lab.soa.domain.BalconyType;
-import lab.soa.domain.Transport;
-import lab.soa.domain.View;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,46 +15,47 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@XmlAccessorType(XmlAccessType.FIELD)
 public class FlatResponseDto {
-    @JacksonXmlProperty(localName = "id")
+    @XmlElement(name = "id")
     private Long id;
 
-    @JacksonXmlProperty(localName = "name")
+    @XmlElement(name = "name")
     private String name;
 
-    @JacksonXmlProperty(localName = "coordinates")
+    @XmlElement(name = "coordinates")
     private CoordinatesResponseDto coordinates;
 
-    @JacksonXmlProperty(localName = "creationDate")
+    @XmlElement(name = "creationDate")
     private LocalDateTime creationDate;
 
-    @JacksonXmlProperty(localName = "area")
+    @XmlElement(name = "area")
     private Integer area;
 
-    @JacksonXmlProperty(localName = "numberOfRooms")
+    @XmlElement(name = "numberOfRooms")
     private Integer numberOfRooms;
 
-    @JacksonXmlProperty(localName = "height")
+    @XmlElement(name = "height")
     private Integer height;
 
-    @JacksonXmlProperty(localName = "view")
-    private View view;
+    @XmlElement(name = "view")
+    private String view;
 
-    @JacksonXmlProperty(localName = "transport")
-    private Transport transport;
+    @XmlElement(name = "transport")
+    private String transport;
 
-    @JacksonXmlProperty(localName = "house")
+    @XmlElement(name = "house")
     private HouseResponseDto house;
 
-    @JacksonXmlProperty(localName = "price")
+    @XmlElement(name = "price")
     private BigDecimal price;
 
-    @JacksonXmlProperty(localName = "balconyType")
-    private BalconyType balconyType;
+    @XmlElement(name = "balconyType")
+    private String balconyType;
 
-    @JacksonXmlProperty(localName = "walkingMinutesToMetro")
+    @XmlElement(name = "walkingMinutesToMetro")
     private Integer walkingMinutesToMetro;
 
-    @JacksonXmlProperty(localName = "transportMinutesToMetro")
+    @XmlElement(name = "transportMinutesToMetro")
     private Integer transportMinutesToMetro;
 }

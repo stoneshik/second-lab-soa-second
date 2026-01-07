@@ -17,30 +17,13 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <!-- Jakarta EE Version -->
+        <!-- Versions -->
         <version.jakarta.jakartaee-api>10.0.0</version.jakarta.jakartaee-api>
-        <!-- Dependency Versions -->
         <version.lombok>1.18.30</version.lombok>
-        <version.log4j>2.20.0</version.log4j>
-        <version.junit>5.10.0</version.junit>
         <jackson.version>2.16.1</jackson.version>
-        <postgresql.version>42.7.8</postgresql.version>
-        <!-- Plugin Versions -->
-        <version.maven.war.plugin>3.4.0</version.maven.war.plugin>
-        <version.maven.compiler.plugin>3.11.0</version.maven.compiler.plugin>
-        <wildfly.maven.plugin.version>5.1.3.Final</wildfly.maven.plugin.version>
-        <!-- WildFly Configuration -->
-        <wildfly.version>31.0.0.Final</wildfly.version>
-        <wildfly.hostname>localhost</wildfly.hostname>
-        <wildfly.port.http>8080</wildfly.port.http>
-        <wildfly.port.management>9990</wildfly.port.management>
-        <wildfly.port.debug>8787</wildfly.port.debug>
-        <!-- Database Configuration -->
-        <db.jndi>java:/jdbc/SoaServiceDS</db.jndi>
-        <db.url>jdbc:postgresql://localhost:5432/soa_service</db.url>
-        <db.username>postgres</db.username>
-        <db.password>admin</db.password>
+        <!-- WildFly paths -->
+        <wildfly.home>${project.basedir}/wildfly</wildfly.home>
+        <wildfly.deployments.dir>${wildfly.home}/standalone/deployments</wildfly.deployments.dir>
     </properties>
 
     <dependencies>
@@ -52,7 +35,12 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Jackson для XML/JSON в JAX-RS -->
+        <!-- Jackson for JAX-RS - включаем в WAR -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+            <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
             <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
@@ -64,13 +52,6 @@
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <!-- Jackson Core -->
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
@@ -81,14 +62,6 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- PostgreSQL Driver -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${postgresql.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -97,30 +70,16 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
-
-        <!-- Logging -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${version.log4j}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${version.log4j}</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <build>
-        <finalName>flat-service</finalName>
+        <finalName>ROOT</finalName>  <!-- Имя ROOT для корневого пути -->
         <plugins>
             <!-- Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${version.maven.compiler.plugin}</version>
+                <version>3.11.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -133,81 +92,51 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
             <!-- WAR Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>${version.maven.war.plugin}</version>
+                <version>3.4.0</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <warSourceDirectory>src/main/webapp</warSourceDirectory>
                     <webResources>
+                        <!-- Добавляем jboss-web.xml -->
                         <resource>
-                            <directory>src/main/resources</directory>
+                            <directory>src/main/webapp/WEB-INF</directory>
+                            <targetPath>WEB-INF</targetPath>
+                            <includes>
+                                <include>jboss-web.xml</include>
+                            </includes>
                         </resource>
                     </webResources>
                 </configuration>
             </plugin>
 
-            <!-- WildFly Maven Plugin - Явная конфигурация -->
+            <!-- Copy WAR to WildFly deployments -->
             <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <version>5.1.3.Final</version>
-                <configuration>
-                    <jboss-home>${project.basedir}/wildfly</jboss-home>
-                    <hostname>${wildfly.hostname}</hostname>
-                    <port>${wildfly.port.http}</port>
-                    <management-port>${wildfly.port.management}</management-port>
-                    <context-root>/</context-root>
-                    <debug>false</debug>
-                    <java-opts>
-                        -Xmx1024m
-                        -Xms512m
-                        -Djava.net.preferIPv4Stack=true
-                    </java-opts>
-                    <server-config>standalone-full.xml</server-config>
-                </configuration>
-                <!-- Секция executions удалена -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-war-to-wildfly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="Copying WAR to WildFly deployments..." />
+                                <copy file="${project.build.directory}/${project.build.finalName}.war"
+                                      tofile="${wildfly.deployments.dir}/${project.build.finalName}.war"
+                                      overwrite="true" />
+                                <!-- Удаляем старый flat-service.war если существует -->
+                                <delete file="${wildfly.deployments.dir}/flat-service.war" failonerror="false" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
-
-        <!-- Фильтрация ресурсов -->
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.xml</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
-
-    <profiles>
-        <!-- Профиль разработки (активен по умолчанию) -->
-        <profile>
-            <id>dev</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <environment>dev</environment>
-                <!-- Настройки БД для разработки уже в основных свойствах -->
-            </properties>
-        </profile>
-
-        <!-- Профиль для продакшена -->
-        <profile>
-            <id>prod</id>
-            <properties>
-                <environment>prod</environment>
-                <db.url>jdbc:postgresql://prod-db-server:5432/soa_service_prod</db.url>
-                <db.username>${env.DB_USER}</db.username>
-                <db.password>${env.DB_PASSWORD}</db.password>
-            </properties>
-        </profile>
-    </profiles>
 </project>

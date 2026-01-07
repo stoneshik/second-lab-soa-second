@@ -61,6 +61,7 @@ public class FlatResource {
                     .entity(error)
                     .build();
             }
+            System.out.println("=== VALIDATED ===");
             PriceType priceType = PriceType.valueOf(priceTypeStr.toUpperCase());
             BalconyType balconyType = BalconyType.valueOf(balconyTypeStr.toUpperCase());
             // Поиск квартиры через Criteria API
@@ -78,6 +79,7 @@ public class FlatResource {
             FlatResponseByIdDto flatDto = convertToFlatByIdResponseDto(flat);
             return Response.ok(flatDto).build();
         } catch (NoResultException e) {
+            System.out.println(e.getMessage());
             ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                 .message("No results found")
                 .time(LocalDateTime.now())
@@ -86,6 +88,7 @@ public class FlatResource {
                 .entity(error)
                 .build();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                 .message("Internal server error")
                 .time(LocalDateTime.now())
@@ -318,5 +321,13 @@ public class FlatResource {
             .year(house.getYear())
             .numberOfFlatsOnFloor(house.getNumberOfFlatsOnFloor())
             .build();
+    }
+
+    @GET
+    @Path("/ping")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String ping() {
+        System.out.println("=== PING METHOD CALLED ===");
+        return "FlatResource is alive! Time: " + java.time.LocalDateTime.now();
     }
 }

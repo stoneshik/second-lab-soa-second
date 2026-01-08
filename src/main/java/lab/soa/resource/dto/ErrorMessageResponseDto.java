@@ -1,6 +1,7 @@
 package lab.soa.resource.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -23,10 +24,12 @@ public class ErrorMessageResponseDto {
     @XmlElement(name = "message")
     private String message;
 
+    @Builder.Default
     @XmlElement(name = "time")
-    private LocalDateTime time;
+    private String time = LocalDateTime.now().toString();
 
+    @Builder.Default
     @XmlElementWrapper(name = "violations")
     @XmlElement(name = "violation")
-    private List<String> violations;
+    private List<String> violations = new ArrayList<>();
 }

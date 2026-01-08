@@ -29,7 +29,7 @@ public class FlatResponseByIdDto {
     private CoordinatesResponseDto coordinates;
 
     @XmlElement(name = "creationDate")
-    private LocalDateTime creationDate;
+    private String creationDate;
 
     @XmlElement(name = "area")
     private Integer area;

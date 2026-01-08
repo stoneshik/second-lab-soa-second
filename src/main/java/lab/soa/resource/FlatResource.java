@@ -55,7 +55,6 @@ public class FlatResource {
             if (!PriceType.isValidValue(priceTypeStr) || !BalconyType.isValidValue(balconyTypeStr)) {
                 ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                     .message("Invalid param value")
-                    .time(LocalDateTime.now())
                     .build();
                 return Response.status(Response.Status.BAD_REQUEST)
                     .entity(error)
@@ -68,7 +67,6 @@ public class FlatResource {
             if (flat == null) {
                 ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                     .message("Flat not found")
-                    .time(LocalDateTime.now())
                     .build();
                 return Response.status(Response.Status.NOT_FOUND)
                     .entity(error)
@@ -76,13 +74,11 @@ public class FlatResource {
             }
             // Конвертация в DTO
             FlatResponseByIdDto flatDto = convertToFlatByIdResponseDto(flat);
-            System.out.println(flatDto);
             return Response.ok(flatDto).build();
         } catch (NoResultException e) {
             System.out.println(e.getMessage());
             ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                 .message("No results found")
-                .time(LocalDateTime.now())
                 .build();
             return Response.status(Response.Status.NOT_FOUND)
                 .entity(error)
@@ -91,7 +87,6 @@ public class FlatResource {
             System.out.println(e.getMessage());
             ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                 .message("Internal server error")
-                .time(LocalDateTime.now())
                 .build();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(error)
@@ -114,7 +109,6 @@ public class FlatResource {
             if (!TransportType.isValidValue(transportTypeStr) || !SortType.isValidValue(sortTypeStr)) {
                 ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                     .message("Invalid param value")
-                    .time(LocalDateTime.now())
                     .build();
                 return Response.status(Response.Status.BAD_REQUEST)
                     .entity(error)
@@ -123,7 +117,6 @@ public class FlatResource {
             if (page < 0) {
                 ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                     .message("Invalid page parameter")
-                    .time(LocalDateTime.now())
                     .build();
                 return Response.status(Response.Status.BAD_REQUEST)
                     .entity(error)
@@ -132,7 +125,6 @@ public class FlatResource {
             if (size < 1) {
                 ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                     .message("Invalid pageSize parameter")
-                    .time(LocalDateTime.now())
                     .build();
                 return Response.status(Response.Status.BAD_REQUEST)
                     .entity(error)
@@ -147,7 +139,6 @@ public class FlatResource {
             if (totalElements > 0 && page >= totalPages) {
                 ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                     .message("Invalid page number")
-                    .time(LocalDateTime.now())
                     .build();
                 return Response.status(Response.Status.BAD_REQUEST)
                     .entity(error)
@@ -174,7 +165,6 @@ public class FlatResource {
             System.out.println(e.getMessage());
             ErrorMessageResponseDto error = ErrorMessageResponseDto.builder()
                 .message("Internal server error")
-                .time(LocalDateTime.now())
                 .build();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(error)
@@ -255,7 +245,7 @@ public class FlatResource {
             .id(flat.getId())
             .name(flat.getName())
             .coordinates(convertToCoordinatesResponseDto(flat.getCoordinates()))
-            .creationDate(flat.getCreationDate())
+            .creationDate(flat.getCreationDate().toString())
             .area(flat.getArea())
             .numberOfRooms(flat.getNumberOfRooms())
             .height(flat.getHeight())
@@ -276,7 +266,7 @@ public class FlatResource {
             .id(flat.getId())
             .name(flat.getName())
             .coordinates(convertToCoordinatesResponseDto(flat.getCoordinates()))
-            .creationDate(flat.getCreationDate())
+            .creationDate(flat.getCreationDate().toString())
             .area(flat.getArea())
             .numberOfRooms(flat.getNumberOfRooms())
             .height(flat.getHeight())

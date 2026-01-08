@@ -1,7 +1,6 @@
 package lab.soa.resource.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;

@@ -10,7 +10,7 @@ Wildfly располагаем в корневую директорию прое
 Эта команда упаковывает проект в `war` и копирует `war` в `wildfly`
 
 И запускаем wildfly:<br>
-`./wildfly/bin/standalone.sh -c standalone-full.xml`
+`./wildfly/bin/standalone.sh -c standalone-my.xml`
 
 Настройка `wildfly`:<br>
 ```

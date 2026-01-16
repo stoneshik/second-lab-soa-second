@@ -10,6 +10,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.ws.rs.DefaultValue;
@@ -178,6 +179,9 @@ public class FlatResource {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Flat> query = cb.createQuery(Flat.class);
         Root<Flat> flat = query.from(Flat.class);
+        // JOIN FETCH для загрузки связанных сущностей
+        flat.fetch("coordinates", JoinType.INNER);
+        flat.fetch("house", JoinType.INNER);
         // WHERE clause
         Predicate balconyPredicate = cb.equal(flat.get("balconyType"), balconyType);
         query.where(balconyPredicate);
@@ -187,6 +191,8 @@ public class FlatResource {
         } else {
             query.orderBy(cb.desc(flat.get("price")));
         }
+        // Используем distinct, чтобы избежать дубликатов при fetch
+        query.select(flat).distinct(true);
         TypedQuery<Flat> typedQuery = entityManager.createQuery(query);
         typedQuery.setMaxResults(1);
         try {
@@ -208,6 +214,9 @@ public class FlatResource {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Flat> query = cb.createQuery(Flat.class);
         Root<Flat> flat = query.from(Flat.class);
+        // JOIN FETCH для загрузки связанных сущностей
+        flat.fetch("coordinates", JoinType.INNER);
+        flat.fetch("house", JoinType.INNER);
         String timeField = (transportType == TransportType.WALKING)
             ? "walkingMinutesToMetro"
             : "transportMinutesToMetro";
@@ -216,6 +225,8 @@ public class FlatResource {
         } else {
             query.orderBy(cb.desc(flat.get(timeField)));
         }
+        // Используем distinct, чтобы избежать дубликатов при fetch
+        query.select(flat).distinct(true);
         TypedQuery<Flat> typedQuery = entityManager.createQuery(query);
         typedQuery.setFirstResult(page * pageSize);
         typedQuery.setMaxResults(pageSize);

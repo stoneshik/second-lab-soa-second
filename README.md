@@ -34,39 +34,22 @@ wget https://jdbc.postgresql.org/download/postgresql-42.7.8.jar
 </module>
 ```
 
-Меняем в файле `standalone/configuration/standalone-full.xml`:
+Пример конфигурации `standalone/configuration/standalone-my.xml`
+
+Генерация ключа:
 ```
-<subsystem xmlns="urn:jboss:domain:datasources:7.2">
-    <datasources>
-        <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true" statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}">
-            <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=${wildfly.h2.compatibility.mode:REGULAR}</connection-url>
-            <driver>h2</driver>
-            <security user-name="sa" password="sa"/>
-        </datasource>
-        <datasource jndi-name="java:/jdbc/SoaServiceDS" pool-name="SoaServiceDS" enabled="true" use-java-context="true">
-            <connection-url>jdbc:postgresql://localhost:5432/soa_service</connection-url>
-            <driver>postgresql</driver>
-            <security user-name="postgres" password="admin"/>
-            <validation>
-                <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
-                <validate-on-match>true</validate-on-match>
-                <background-validation>false</background-validation>
-                <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
-            </validation>
-            <pool>
-                <min-pool-size>5</min-pool-size>
-                <max-pool-size>20</max-pool-size>
-                <prefill>true</prefill>
-            </pool>
-        </datasource>
-        <drivers>
-            <driver name="h2" module="com.h2database.h2">
-                <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
-            </driver>
-            <driver name="postgresql" module="org.postgresql">
-                <xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
-            </driver>
-        </drivers>
-    </datasources>
-</subsystem>
+keytool -genkeypair -alias wildfly -keyalg RSA -keysize 4096 \
+  -validity 3650 -keystore keystore.p12 \
+  -storetype PKCS12 -storepass changeit -keypass changeit \
+  -dname "CN=localhost, OU=Development, O=Company, L=City, ST=State, C=RU"
+```
+
+Экспорт сертификата:
+```
+keytool -exportcert -alias wildfly -keystore wildfly.p12 -storetype PKCS12 -storepass changeit -file wildfly.crt
+```
+
+Добавление сертификата в trustore:
+```
+keytool -importcert -alias wildfly -file wildfly.crt -keystore wildfly-truststore.p12 -storetype PKCS12 -storepass changeit -noprompt
 ```

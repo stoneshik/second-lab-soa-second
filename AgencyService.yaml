@@ -1,0 +1,252 @@
+openapi: 3.0.3
+info:
+  title: Agency service REST endpoints
+  description: Agency service REST endpoints for SOA first lab
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:335159/api/v1/agency'
+paths:
+  /find-with-balcony/{priceType}/{balconyType}:
+    get:
+      summary: Find flat by price and balcony availability
+      description: Returns the cheapest or most expensive flat, with or without a balcony, depending on the parameters
+      operationId: findWithBalcony
+      parameters:
+        - name: priceType
+          in: path
+          description: >
+            Search type:<br>
+            - 'CHEAPEST' - the cheapest flat<br>
+            - 'EXPENSIVE' - the most expensive flat
+          required: true
+          schema:
+            type: string
+            nullable: false
+            enum: [CHEAPEST, EXPENSIVE]
+          example: CHEAPEST
+        - name: balconyType
+          in: path
+          description: >
+            Balcony type:<br>
+            - 'WITH_BALCONY' - flat with balcony<br>
+            - 'WITHOUT_BALCONY' - flat without balcony
+          required: true
+          schema:
+            type: string
+            nullable: false
+            enum: [WITH_BALCONY, WITHOUT_BALCONY]
+          example: WITH_BALCONY
+      tags:
+        - Agency
+      responses:
+        '200':
+          description: Successfully find suitable flat
+          content:
+            application/xml:
+              schema:
+                $ref: 'FlatService.yaml#/components/schemas/flatsPage'
+        '400':
+          description: Invalid param(s) supplied
+          content:
+            applicaiton/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Invalid param(s) supplied
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '404':
+          description: Not found suitable flat
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Not found suitable flat
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: 'FlatService.yaml#/components/schemas/error'
+
+  /get-ordered-by-time-to-metro/{transportType}/{sortType}:
+    get:
+      summary: Return a list of flats sorted by time to metro
+      description: >
+        Returns a list of all flats sorted by the time it takes to get from the apartment to the nearest metro station.<br>
+        Sorting can be performed by walking time or by transit time, in ascending or descending order.
+      operationId: getOrderedByTimeToMetro
+      parameters:
+        - name: transportType
+          in: path
+          description: >
+            Transport type:<br>
+            - 'WALKING' - time for walking<br>
+            - 'TRANSPORT' - time on public/private transport
+          required: true
+          schema:
+            type: string
+            nullable: false
+            enum: [WALKING, TRANSPORT]
+          example: WALKING
+        - name: sortType
+          in: path
+          description: >
+            Sort type:<br>
+            - 'asc' - in ascending order of time (closer first)<br>
+            - 'desc' - in descending order of time (first to next)
+          required: true
+          schema:
+            type: string
+            nullable: false
+            enum: [asc, desc]
+          example: asc
+        - name: page
+          in: query
+          required: false
+          description: Specifies page number for pagination. By default returns first page
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          required: false
+          description: Specifies page size for pagination. By default page size will be 10
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+      tags:
+        - Agency
+      responses:
+        '200':
+          description: Successfully returns an array of of flats sorted by time to metro
+          content:
+            application/xml:
+              schema:
+                $ref: 'FlatService.yaml#/components/schemas/flatsPage'
+        '400':
+          description: Invalid param(s) supplied
+          content:
+            applicaiton/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Invalid param(s) supplied
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: 'FlatService.yaml#/components/schemas/error'

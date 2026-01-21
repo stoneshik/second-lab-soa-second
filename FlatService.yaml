@@ -1,0 +1,1052 @@
+openapi: 3.0.3
+info:
+  title: Flats registry service REST endpoints
+  description: Flats registry service REST endpoints for SOA first lab
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:335159/api/v1/'
+paths:
+  # CRUD operations
+  /flats:
+    post:
+      summary: Add new flat
+      operationId: addFlat
+      tags:
+        - Registry
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/flatSchema'
+      responses:
+        '200':
+          description: Successfully add new flat
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/flatSchema'
+        '422':
+          description: Validation exception
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Unprocessable entity
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/error'
+    get:
+      summary: Get list of flats
+      description: Get list of flats with sorting and pagination
+      operationId: getFlats
+      parameters:
+        - name: sort
+          in: query
+          description: |
+            Sorting parameters in the format `property,asc|desc`.
+            Multiple comma-separated sorts are supported.<br>
+            Available sorting fields:
+            - id
+            - name
+            - coordinates.id
+            - coordinates.x
+            - coordinates.y
+            - creationDate
+            - area
+            - numberOfRooms
+            - height
+            - view
+            - transport
+            - house.id
+            - house.name
+            - house.year
+            - house.numberOfFlatsOnFloor
+            - price
+            - balconyType
+            - walkingMinutesToMetro
+            - transportMinutesToMetro
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            default: ["name,asc"]
+        - name: filter
+          in: query
+          required: false
+          description: >
+            Field filter list.<br>
+            Format (except interval and range): `field(operation)value`.<br>
+            Format for interval and range: `field(operation)min_max`<br>
+            Interval and range supports only numbers<br>
+            Available operations:<br>
+            - `eq` - equals<br>
+            - `ne` - not equals<br>
+            - `gt` - greater than (strict)<br>
+            - `lt` - less than (strict)<br>
+            - `gte` - greater than or equals<br>
+            - `lte` - less than or equals<br>
+            - `interval` - open interval `(min, max)`<br>
+            - `range` - closed range `[min, max]`<br>
+            Examples:<br>
+            - `area(gt)10` - area > 10<br>
+            - `area(interval)10_20` - 10 < area < 20<br>
+            - `numberOfRooms(range)1_3` - 1 ≤ rooms ≤ 3<br>
+            If operation is `interval` or `range`, value **must** contain 2 numbers separated by `_`.<br>
+            Otherwise - one value. Incorrect value returns exception with code 400.<br>
+            pattern: ^([a-z]+)\\((eq|ne|gt|lt|gte|lte|interval|range)\\)(.+)$
+          style: deepObject
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              example: "area(interval)10_20"
+            pattern: "^([a-zA-Z.]+)\\((eq|ne|gt|lt|gte|lte|interval|range)\\)(.+)$"
+            default: ["area(interval)10_20"]
+        - name: page
+          in: query
+          required: false
+          description: Page number for pagination. Default is 0
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          required: false
+          description: Specifies page size for pagination. By default page size will be 10
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfully returns an array of flats based on passed parameters
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/flatsPage'
+        '400':
+          description: Invalid param(s) supplied
+          content:
+            applicaiton/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Invalid param(s) supplied
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/error'
+    # Additional operation
+    delete:
+      summary: Delete one flat by filter
+      description: >
+        Deletes one (any) Flat object that matches the specified criteria.<br>
+        The value that is equal to the one specified in the filter is deleted.<br>
+        If multiple matching records are found, the first matching record is deleted.
+      operationId: deleteOneFlatByFilter
+      parameters:
+        - name: houseName
+          in: query
+          description: house.name value filter for delete flat
+          required: false
+          schema:
+            type: string
+            nullable: false
+            minLength: 1
+            example: First house
+        - name: houseYear
+          in: query
+          description: house.year value filter for delete flat
+          required: false
+          schema:
+            type: integer
+            nullable: false
+            minimum: 0
+            exclusiveMinimum: true
+            example: 2000
+        - name: numberOfFlatsOnFloor
+          in: query
+          description: house.numberOfFlatsOnFloor value filter for delete flat
+          required: false
+          schema:
+            type: integer
+            nullable: false
+            minimum: 0
+            exclusiveMinimum: true
+            example: 9
+      tags:
+        - Registry
+      responses:
+        '204':
+          description: Flat was successfully deleted
+        '400':
+          description: At least one parameter was not passed
+          content:
+            applicaiton/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: At least one parameter was not passed
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '404':
+          description: Not found flat by filter param error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Not found flat by filter param
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  # CRUD operations by id
+  /flats/{id}:
+    get:
+      summary: Get existing flat by id
+      description: Get existing flat by id
+      operationId: getFlat
+      parameters:
+        - name: id
+          in: path
+          description: Flat id for find
+          required: true
+          schema:
+            type: integer
+            nullable: false
+            minimum: 0
+            exclusiveMinimum: true
+            example: 1
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfully returns flat by id
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/flatSchema'
+        '400':
+          description: Invalid param supplied
+          content:
+            applicaiton/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Invalid param supplied
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '404':
+          description: Not found flat by param id error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: "Not found flat by id: 1"
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      summary: Update existing flat by id
+      description: Update existing flat by id
+      operationId: updateFlat
+      parameters:
+        - name: id
+          in: path
+          description: Flat id to update
+          required: true
+          schema:
+            type: integer
+            nullable: false
+            minimum: 0
+            exclusiveMinimum: true
+            example: 1
+      tags:
+        - Registry
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/flatSchema'
+      responses:
+        '200':
+          description: Successfully returns an updated flat
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/flatSchema'
+        '422':
+          description: Validation exception
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Unprocessable entity
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '404':
+          description: Not found flat by param id error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: "Not found flat by id: 1"
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/xmll:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/error'
+    delete:
+      summary: Delete existing flat by id
+      description: Delete existing flat by id
+      operationId: deleteFlat
+      parameters:
+        - name: id
+          in: path
+          description: Flat id for delete
+          required: true
+          schema:
+            type: integer
+            nullable: false
+            minimum: 0
+            exclusiveMinimum: true
+      tags:
+        - Registry
+      responses:
+        '204':
+          description: Flat was successfully deleted
+        '404':
+          description: Not found flat by param id error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: "Not found flat by id: 1"
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  # Additional operations
+  /flats/sum/height:
+    get:
+      summary: Get sum of fields "height" for all flat objects
+      description: Get sum of fields "height" for all flat objects
+      operationId: getAmountOfFieldsHeight
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfully returns sum of fields "height" for all flat objects
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: response
+                properties:
+                  value:
+                    type: integer
+                    format: int64
+                    nullable: false
+                    minimum: 0
+                    example: 123
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  /flats/group-by/height:
+    get:
+      summary: Group flats by height
+      description: Group flats by height
+      operationId: groupByHeight
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfully returns group flats by height
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: groupsWrapper
+                properties:
+                  groups:
+                    type: array
+                    xml:
+                      wrapped: true
+                      name: groups
+                    items:
+                      type: object
+                      xml:
+                        name: group
+                      properties:
+                        height:
+                          type: integer
+                          nullable: false
+                          description: Flat floor number
+                          minimum: 0
+                          exclusiveMinimum: true
+                          example: 10
+                        count:
+                          type: integer
+                          nullable: false
+                          description: Number of flats with this height
+                          minimum: 0
+                          exclusiveMinimum: true
+                          example: 8
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: error
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+                  violations:
+                    type: array
+                    items:
+                      type: string
+                      example: Flat field area equals or less than 0
+                      xml:
+                        name: violation
+                    xml:
+                      name: violations
+                      wrapped: true
+                    default: []
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error message and time case of error
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/error"
+
+# Schemas of objects
+components:
+  schemas:
+    flatSchema:
+      type: object
+      xml:
+        name: flat
+      properties:
+        id:
+          type: integer
+          nullable: false
+          minimum: 0
+          exclusiveMinimum: true
+          example: 1
+          description: Unique identifier for flat, generate automatically
+          readOnly: true
+        name:
+          type: string
+          nullable: false
+          minLength: 1
+          example: First Flat
+        coordinates:
+          $ref: '#/components/schemas/coordinates'
+        creationDate:
+          type: string
+          format: date-time
+          nullable: false
+          example: 2024-11-10
+          description: Date and time of creation object, generate automatically
+          readOnly: true
+        area:
+          type: integer
+          nullable: true
+          minimum: 0
+          exclusiveMinimum: true
+          example: 1
+        numberOfRooms:
+          type: integer
+          nullable: false
+          minimum: 0
+          exclusiveMinimum: true
+          example: 1
+        height:
+          type: integer
+          nullable: false
+          minimum: 0
+          exclusiveMinimum: true
+          example: 10
+        view:
+          $ref: '#/components/schemas/view'
+        transport:
+          $ref: '#/components/schemas/transport'
+        house:
+          $ref: '#/components/schemas/house'
+        price:
+          type: string
+          pattern: '^\d+(\.\d{2})?$'
+          example: "100.50"
+          description: Price flat (format - decimal with two decimal places)
+        balconyType:
+          $ref: '#/components/schemas/balconyType'
+        walkingMinutesToMetro:
+          type: integer
+          nullable: false
+          minimum: 0
+          exclusiveMinimum: true
+          example: 10
+        transportMinutesToMetro:
+          type: integer
+          nullable: false
+          minimum: 0
+          exclusiveMinimum: true
+          example: 5
+      required:
+        - name
+        - coordinates
+        - numberOfRooms
+        - height
+        - house
+        - price
+        - balconyType
+        - walkingMinutesToMetro
+        - transportMinutesToMetro
+
+    flatsPage:
+      type: object
+      xml:
+        name: flatsPage
+      properties:
+        flats:
+          type: array
+          nullable: false
+          items:
+            $ref: '#/components/schemas/flatSchema'
+          xml:
+            name: flats
+            wrapped: true
+        totalElements:
+          type: integer
+          nullable: false
+          minimum: 0
+          default: 0
+          example: 1
+        totalPages:
+          type: integer
+          nullable: false
+          minimum: 0
+          default: 1
+        currentPage:
+          type: integer
+          nullable: false
+          minimum: 0
+          default: 0
+        pageSize:
+          type: integer
+          nullable: false
+          minimum: 0
+          default: 20
+      required:
+        - flats
+        - page
+        - pageSize
+        - totalPages
+        - totalAmount
+
+    coordinates:
+      type: object
+      nullable: false
+      properties:
+        id:
+          type: integer
+          nullable: false
+          minimum: 0
+          exclusiveMinimum: true
+          example: 1
+          description: Unique identifier for coordinates, generate automatically
+          readOnly: true
+        x:
+          type: number
+          format: float
+          nullable: false
+          minimum: -993
+          exclusiveMinimum: true
+          example: 1.1
+        y:
+          type: number
+          format: int64
+          nullable: false
+          example: 123
+      required:
+        - x
+        - y
+
+    house:
+      type: object
+      nullable: false
+      properties:
+        id:
+          type: integer
+          nullable: false
+          minimum: 0
+          exclusiveMinimum: true
+          example: 1
+          description: Unique identifier for house, generate automatically
+          readOnly: true
+        name:
+          type: string
+          nullable: false
+          example: First house
+        year:
+          type: integer
+          nullable: true
+          minimum: 0
+          exclusiveMinimum: true
+          example: 2000
+        numberOfFlatsOnFloor:
+          type: integer
+          nullable: true
+          minimum: 0
+          exclusiveMinimum: true
+          example: 9
+      required:
+        - name
+
+    view:
+      type: string
+      nullable: true
+      example: STREET
+      enum:
+        - STREET
+        - YARD
+        - BAD
+        - GOOD
+
+    transport:
+      type: string
+      nullable: true
+      example: FEW
+      enum:
+        - FEW
+        - NONE
+        - LITTLE
+        - NORMAL
+        - ENOUGH
+
+    balconyType:
+      type: string
+      nullable: false
+      example: WITH_BALCONY
+      enum:
+        - WITH_BALCONY
+        - WITHOUT_BALCONY
+
+    error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not Found
+        violations:
+          type: array
+          items:
+            type: string
+            example: Flat field area equals or less than 0
+            xml:
+              name: violation
+          xml:
+            name: violations
+            wrapped: true
+          default: []
+        time:
+          type: string
+          format: date-time
+          example: 2024-11-10T00:10:12Z
+      required:
+        - message
+        - violations
+        - time

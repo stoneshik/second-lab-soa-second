@@ -2,7 +2,7 @@
 
 ## Лабораторная работа № 2
 
-Для запуска тестов нужно задать значение переменной окружения `SPRING_PROFILES_ACTIVE` равное `test` - в этом профиле используется БД поднимаемая `testcontainers`
+### Второй сервис, написанный на Spring Boot
 
 Для запуска в обычном режиме значение переменной окружения `SPRING_PROFILES_ACTIVE` равное `dev`
 
@@ -32,6 +32,4 @@ keytool -genkeypair -alias springboot -keyalg RSA -keysize 4096 \
 
 Ссылка на фронтенд - https://github.com/stoneshik/second-lab-soa-frontend
 
-Ссылка на второй вызываемый сервис реализованный на JAX-RS - https://github.com/stoneshik/second-lab-soa-frontend
-
-Писалось все по TDD, можно глянуть в гите (*≧ω≦*)
+Ссылка на первый основной сервис реализованный на JAX-RS - https://github.com/stoneshik/second-lab-soa
